@@ -9,7 +9,6 @@ import { MonthlyIncidentsResponders } from './MonthlyIncidentsResponder';
 import { DailyIncidentsResponders } from './DailyIncidentsResponder';
 import { DailyIncidents } from './DailyIncidents';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
-import moment from 'moment';
 import { opsgenieApiRef } from '../../api';
 import { useAsync } from 'react-use';
 import { Progress } from '@backstage/core-components';
@@ -17,13 +16,14 @@ import { Alert } from '@material-ui/lab';
 import { Context, DEFAULT_BUSINESS_HOURS_END, DEFAULT_BUSINESS_HOURS_START } from '../../analytics';
 import { InfoPanel } from '../InfoPanel';
 import { WeeklyImpactResponders } from './WeeklyImpactResponder';
+import { DateTime } from 'luxon';
 
 export const Analytics = () => {
     const configApi = useApi(configApiRef);
     const opsgenieApi = useApi(opsgenieApiRef);
 
-    const from = moment().subtract(1, 'year').startOf('quarter');
-    const to = moment();
+    const from = DateTime.now().minus({years: 1}).startOf('quarter');
+    const to = DateTime.now().toUTC();
 
     const { value: data, loading, error } = useAsync(async () => {
         return Promise.all([
@@ -44,7 +44,7 @@ export const Analytics = () => {
     const context: Context = {
         from: from,
         to: to,
-        incidents: data![0].filter(incident => moment(incident.impactStartDate).isAfter(from)),
+        incidents: data![0].filter(incident => DateTime.fromISO(incident.impactStartDate) > from),
         teams: data![1],
     };
 
@@ -60,7 +60,7 @@ export const Analytics = () => {
                     title="This graphs cover one year worth of incidents, from the current quarter to the same quarter last year."
                     message={
                         <ul>
-                            <li>Incidents from {from.format('LL')} to now are used</li>
+                            <li>Incidents from {from.toFormat('DDD')} to now are used</li>
                             <li>Business hours are {businessHours.start} to {businessHours.end}</li>
                             <li>Responders are read from the <code>responders</code> incident extra property if defined, or from the "responders" section of an incident.</li>
                         </ul>

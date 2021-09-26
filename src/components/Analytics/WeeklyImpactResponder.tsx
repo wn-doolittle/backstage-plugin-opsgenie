@@ -5,7 +5,6 @@ import { analyticsApiRef, Context } from '../../analytics';
 import { SaveAction } from './SaveAction';
 import { colorForString } from './utils';
 import { Bar, CartesianGrid, ComposedChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import moment from 'moment';
 
 export const WeeklyImpactResponders = ({ context }: { context: Context }) => {
     const graphId = "weekly-impact-responders";
@@ -20,14 +19,14 @@ export const WeeklyImpactResponders = ({ context }: { context: Context }) => {
                         <CartesianGrid strokeDasharray="3 3" />
 
                         <XAxis dataKey="period" />
-                        <YAxis tickFormatter={value => value === 0 ? '0 min' : moment.duration(value, 'minutes').humanize()} />
+                        <YAxis tickFormatter={value => value === 0 ? '0 min' : `${value} minutes`} />
 
                         {data.responders.map(responder => (
                             <Bar dataKey={responder} fill={colorForString(responder)} stackId="a" barSize={30} key={responder} />
                         ))}
 
                         <Tooltip
-                            formatter={(value: number, name: string) => [value === 0 ? '0 min' : moment.duration(value, 'minutes').humanize(), name]}
+                            formatter={(value: number, name: string) => [value === 0 ? '0 min' : `${Math.floor(value)} minutes`, name]}
                         />
                         <Legend />
                     </ComposedChart>
